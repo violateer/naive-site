@@ -49,7 +49,7 @@ const transform: InterceptorHooks = {
         // 此处全局报错
         window.$message.error(msg)
         console.error(msg)
-        return Promise.reject(err.response)
+        return Promise.reject(err.response.data || err.response)
     }
 }
 

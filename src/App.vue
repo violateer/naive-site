@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import Login from "./pages/Login.vue";
+// import Login from "./pages/Login.vue";
 </script>
 
 <template>
   <n-message-provider>
     <n-dialog-provider>
-      <Login />
+      <!-- <Login /> -->
+      <router-view></router-view>
     </n-dialog-provider>
   </n-message-provider>
 </template>

@@ -41,15 +41,14 @@
 import { defineComponent, ref } from "vue";
 import { FormInst, useMessage } from "naive-ui";
 import { GlassesOutline, Glasses } from "@vicons/ionicons5";
-import { LoginParams, login } from "../base/service";
+import { useRouter } from "vue-router";
+import { LoginParams, login } from "../../base/service";
 
 export default defineComponent({
   setup() {
+    const router = useRouter();
     const formRef = ref<FormInst | null>(null);
     const message = useMessage();
-
-    console.log(123);
-
     window.$message = message;
 
     const rules = {
@@ -71,7 +70,8 @@ export default defineComponent({
 
     // 登录
     const Login = async (params: LoginParams) => {
-      login(params);
+      await login(params);
+      router.push("/");
     };
 
     const handleValidateButtonClick = (e: MouseEvent) => {

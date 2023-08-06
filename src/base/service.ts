@@ -33,7 +33,7 @@ export const login = async (params: LoginParams): Promise<LoginUser> => {
         withCredentials: true
     })
 
-    window.$message.error('登录成功')
+    window.$message.success('登录成功')
     return { token, user };
 }
 
