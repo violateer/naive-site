@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/lodash": "^4.14.196",
     "@vicons/ionicons5": "^0.12.0",
     "axios": "^1.4.0",
     "vue": "^3.3.4",

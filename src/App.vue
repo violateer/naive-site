@@ -1,11 +1,9 @@
 <script setup lang="ts">
-// import Login from "./pages/Login.vue";
 </script>
 
 <template>
   <n-message-provider>
     <n-dialog-provider>
-      <!-- <Login /> -->
       <router-view></router-view>
     </n-dialog-provider>
   </n-message-provider>
@@ -18,9 +16,11 @@
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.vue:hover {
   filter: drop-shadow(0 0 2em #42b883aa);
 }
