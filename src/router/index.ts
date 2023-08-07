@@ -1,5 +1,10 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import { profile } from '../base/service'
+import { getMenu, profile } from '../base/service'
+import { useUserStore } from '../store/user'
+import { defineComponent, h, ref, Component } from "vue";
+import { NIcon } from "naive-ui";
+import { arrayToTree } from '../utils/transform';
+
 const Login = () => import('../pages/Auth/Login.vue')
 const Index = () => import('../pages/Index.vue')
 const routes: Array<RouteRecordRaw> = [
@@ -11,10 +16,33 @@ const router = createRouter({
     routes
 })
 
+function renderIcon(icon: Component) {
+    return () => h(NIcon, null, { default: () => h(icon) });
+}
+
 router.beforeEach(async (to, from) => {
+    const userStore = useUserStore();
     if (to.name !== 'login') {
         try {
-            await profile();
+            const userInfo = await profile();
+
+            // 获取菜单
+            const menus = await getMenu();
+
+            // 获取所有icon
+            const icons = await import(`@vicons/ionicons5`)
+
+            userStore.$patch(state => {
+                state.user = userInfo;
+                // @ts-ignore
+                state.menus = arrayToTree(menus.map((menu: any) => {
+                    // @ts-ignore
+                    menu.icon = renderIcon(icons[menu.icon])
+
+                    return menu
+                }));
+            })
+
         } catch (error) {
             return { name: 'login' }
         }

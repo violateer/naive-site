@@ -59,7 +59,7 @@ export const profile = async () => {
 /**
  * 查询用户信息
  */
-export const getMenu = async () => {
-    return request.get('/v1/sys/sysMenu')
+export const getMenu = async (isTree = false) => {
+    return request.get(`/v1/sys/sysMenu${isTree ? '/tree' : ''}`)
 }
 
