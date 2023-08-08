@@ -17,67 +17,54 @@
           :collapsed-width="64"
           :collapsed-icon-size="22"
           :options="menuOptions"
+          @update:value="ClickMenu"
           accordion
         />
       </n-layout-sider>
       <n-layout>
-        <span>内容</span>
+        <div class="content">
+          <router-view></router-view>
+        </div>
       </n-layout>
     </n-layout>
   </n-space>
 </template>
     
 <script lang="ts">
-import { defineComponent, h, ref, Component } from "vue";
-import { useMessage } from "naive-ui";
-import { NIcon } from "naive-ui";
+import { defineComponent, ref } from "vue";
 import type { MenuOption } from "naive-ui";
-// import { BookOutline as BookIcon } from "@vicons/ionicons5";
 import { useUserStore } from "../store/user";
-
-function renderIcon(icon: Component) {
-  return () => h(NIcon, null, { default: () => h(icon) });
-}
-
-// const menuOptions: MenuOption[] = [
-//   {
-//     label: "且听风吟",
-//     key: "hear-the-wind-sing",
-//     icon: renderIcon(BookIcon),
-//   },
-//   {
-//     label: "1973年的弹珠玩具",
-//     key: "pinball-1973",
-//     icon: renderIcon(BookIcon),
-//     children: [
-//       {
-//         label: "鼠",
-//         key: "rat",
-//       },
-//     ],
-//   },
-//   {
-//     label: "寻羊冒险记",
-//     key: "a-wild-sheep-chase",
-//     icon: renderIcon(BookIcon),
-//   },
-// ];
+import router from "../router/index";
 
 export default defineComponent({
   setup() {
-    const message = useMessage();
-    window.$message = message;
-
     const userStore = useUserStore();
+    const activeKey = ref<string | null>(null);
+    const collapsed = ref(false);
 
     const menuOptions: MenuOption[] = userStore.menus;
 
+    const ClickMenu = (key: string, item: MenuOption) => {
+      if (item.component) {
+        router.push(key);
+      }
+      return [item];
+    };
+
     return {
-      activeKey: ref<string | null>(null),
-      collapsed: ref(true),
+      activeKey,
+      collapsed,
       menuOptions,
       userStore,
+      ClickMenu,
     };
   },
 });
 </script>
+
+<style lang="scss">
+.content {
+  padding: 1rem;
+  height: calc(100vh - 2rem);
+}
+</style>

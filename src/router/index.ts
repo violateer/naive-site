@@ -1,15 +1,21 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import { getMenu, profile } from '../base/service'
 import { useUserStore } from '../store/user'
-import { defineComponent, h, ref, Component } from "vue";
+import { h, Component } from "vue";
 import { NIcon } from "naive-ui";
 import { arrayToTree } from '../utils/transform';
 
 const Login = () => import('../pages/Auth/Login.vue')
 const Index = () => import('../pages/Index.vue')
+const sysMenu = () => import('../pages/sys/sysMenu.vue')
 const routes: Array<RouteRecordRaw> = [
     { path: '/login', name: 'login', component: Login },
-    { path: '/', name: 'index', component: Index },
+    {
+        path: '/', name: 'index', component: Index,
+        children: [
+            { path: '/sys/sysMenu', name: 'sysMeu', component: sysMenu }
+        ]
+    },
 ]
 const router = createRouter({
     history: createWebHistory(),

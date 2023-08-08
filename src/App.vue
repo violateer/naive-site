@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import Init from "./Init.vue";
 </script>
 
 <template>
   <n-message-provider>
     <n-dialog-provider>
-      <router-view></router-view>
+      <Init>
+        <router-view></router-view>
+      </Init>
     </n-dialog-provider>
   </n-message-provider>
 </template>
