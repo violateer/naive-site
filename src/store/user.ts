@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { arrayToTree } from '../utils/transform'
 export const useUserStore = defineStore('user', {
     state: () => {
         return {
@@ -6,6 +7,14 @@ export const useUserStore = defineStore('user', {
             menus: [],
         }
     },
-    getters: {},
-    actions: {}
+    getters: {
+        getMenu(state) {
+            return arrayToTree(state.menus)
+        }
+    },
+    actions: {
+        setMenu() {
+            
+        }
+    }
 })

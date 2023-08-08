@@ -5,9 +5,11 @@ import Init from "./Init.vue";
 <template>
   <n-message-provider>
     <n-dialog-provider>
-      <Init>
-        <router-view></router-view>
-      </Init>
+      <Suspense>
+        <Init>
+          <router-view></router-view>
+        </Init>
+      </Suspense>
     </n-dialog-provider>
   </n-message-provider>
 </template>

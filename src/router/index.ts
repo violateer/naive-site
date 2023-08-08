@@ -1,54 +1,43 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import { getMenu, profile } from '../base/service'
-import { useUserStore } from '../store/user'
-import { h, Component } from "vue";
-import { NIcon } from "naive-ui";
-import { arrayToTree } from '../utils/transform';
+
+const modules = import.meta.glob('../pages/*/*.vue');
 
 const Login = () => import('../pages/Auth/Login.vue')
 const Index = () => import('../pages/Index.vue')
-const sysMenu = () => import('../pages/sys/sysMenu.vue')
 const routes: Array<RouteRecordRaw> = [
     { path: '/login', name: 'login', component: Login },
-    {
-        path: '/', name: 'index', component: Index,
-        children: [
-            { path: '/sys/sysMenu', name: 'sysMeu', component: sysMenu }
-        ]
-    },
+    { path: '/', name: 'index', component: Index, },
 ]
 const router = createRouter({
     history: createWebHistory(),
     routes
 })
 
-function renderIcon(icon: Component) {
-    return () => h(NIcon, null, { default: () => h(icon) });
-}
+// 生成动态路由
+const menus = await getMenu();
+menus.forEach((menu: any) => {
 
-router.beforeEach(async (to, from) => {
-    const userStore = useUserStore();
+    let menuComp;
+    if (menu.component) {
+        menuComp = modules[`../pages${menu.key}.vue`]
+    }
+    const parenteKey = menus.filter((v: any) => v.id == menu.parentId).length > 0 ? menus.filter((v: any) => v.id == menu.parentId)[0].label : 'index'
+
+    const childRoute = {
+        path: menu.key,
+        name: menu.label,
+        component: menuComp,
+        children: []
+    }
+
+    router.addRoute(parenteKey, childRoute)
+})
+
+router.beforeEach(async (to, _from) => {
     if (to.name !== 'login') {
         try {
-            const userInfo = await profile();
-
-            // 获取菜单
-            const menus = await getMenu();
-
-            // 获取所有icon
-            const icons = await import(`@vicons/ionicons5`)
-
-            userStore.$patch(state => {
-                state.user = userInfo;
-                // @ts-ignore
-                state.menus = arrayToTree(menus.map((menu: any) => {
-                    // @ts-ignore
-                    menu.icon = renderIcon(icons[menu.icon])
-
-                    return menu
-                }));
-            })
-
+            await profile()
         } catch (error) {
             return { name: 'login' }
         }

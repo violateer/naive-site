@@ -42,12 +42,13 @@ export default defineComponent({
     const activeKey = ref<string | null>(null);
     const collapsed = ref(false);
 
-    const menuOptions: MenuOption[] = userStore.menus;
+    const menuOptions: MenuOption[] = userStore.getMenu;
 
     const ClickMenu = (key: string, item: MenuOption) => {
       if (item.component) {
         router.push(key);
       }
+
       return [item];
     };
 
