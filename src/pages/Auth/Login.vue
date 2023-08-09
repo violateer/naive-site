@@ -47,7 +47,7 @@
   
 <script lang="ts">
 import { defineComponent, ref } from "vue";
-import { FormInst, useMessage } from "naive-ui";
+import { FormInst, NIcon, useMessage } from "naive-ui";
 import { GlassesOutline, Glasses } from "@vicons/ionicons5";
 import { useRouter } from "vue-router";
 import { LoginParams, login } from "../../base/service";

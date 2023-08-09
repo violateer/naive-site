@@ -37,10 +37,11 @@ import { useUserStore } from "../store/user";
 import router from "../router/index";
 
 export default defineComponent({
-  setup() {
+  async setup() {
     const userStore = useUserStore();
     const activeKey = ref<string | null>(null);
     const collapsed = ref(false);
+    console.log(123);
 
     const menuOptions: MenuOption[] = userStore.getMenu;
 

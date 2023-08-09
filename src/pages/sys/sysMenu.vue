@@ -8,7 +8,7 @@
   />
 </template>
   
-  <script>
+<script>
 import { h, defineComponent, ref, nextTick, computed } from "vue";
 import { NInput } from "naive-ui";
 
