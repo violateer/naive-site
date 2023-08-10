@@ -17,7 +17,7 @@ router.beforeEach(async (to, from) => {
     if (to.name !== 'login') {
         try {
             await profile()
-            await RenderHelper()
+            await RenderHelper(to.fullPath)
         } catch (error) {
             return { name: 'login' }
         }

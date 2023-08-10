@@ -5,7 +5,7 @@ import { getMenu, profile } from "../base/service";
 import { useUserStore } from "../store/user";
 import { arrayToTree } from "../utils/transform";
 
-export const RenderHelper = async () => {
+export const RenderHelper = async (toPath = "/") => {
     const modules = import.meta.glob("/src/pages/*/*.vue");
     const menus = await getMenu();
 
@@ -31,9 +31,7 @@ export const RenderHelper = async () => {
             router.addRoute(parenteKey, childRoute);
         });
 
-        router.replace(router.currentRoute.value.fullPath)
-
-        // router.replace('/sys/sysMenu')
+        router.replace(toPath)
     }
 
 
