@@ -32,6 +32,8 @@ export const RenderHelper = async () => {
         });
 
         router.replace(router.currentRoute.value.fullPath)
+
+        // router.replace('/sys/sysMenu')
     }
 
 
