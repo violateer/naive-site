@@ -29,11 +29,13 @@ export interface LoginUser {
  * @param password 密码
  */
 export const login = async (params: LoginParams): Promise<LoginUser> => {
+    window.$loadingBar?.start()
     const { token, user } = await request.post('/v1/user/login', params, {
         withCredentials: true
     })
 
-    window.$message.success('登录成功')
+    window.$loadingBar?.finish()
+    window.$message.success('登录成功');
     return { token, user };
 }
 

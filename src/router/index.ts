@@ -14,6 +14,7 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from) => {
+    window.$loadingBar?.start()
     if (to.name !== 'login') {
         try {
             await profile()
@@ -22,6 +23,10 @@ router.beforeEach(async (to, from) => {
             return { name: 'login' }
         }
     }
+})
+
+router.afterEach((to: any) => {
+    window.$loadingBar?.finish();
 })
 
 export default router

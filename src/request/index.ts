@@ -1,12 +1,6 @@
 import axios from 'axios'
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 
-// 定义一个常见后端请求返回
-type BaseApiResponse<T> = {
-    code: number
-    message: string
-    result: T
-}
 // 拓展 axios 请求配置，加入我们自己的配置
 interface RequestOptions {
     // 是否全局展示请求 错误信息
