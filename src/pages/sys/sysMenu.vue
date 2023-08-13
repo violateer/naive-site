@@ -1,6 +1,6 @@
 <template>
   <div class="table-content">
-    <Table :columns="columns" :data="data"></Table>
+    <Table :columns="columns" :data="data" :tableProps="tableProps"></Table>
   </div>
 </template>
   
@@ -11,7 +11,7 @@ export default defineComponent({
   components: {
     Table,
   },
-  setup() {
+  async setup() {
     const createData = () =>
       Array.from({ length: 100 }).map((_, index) => ({
         key: index + "",
@@ -22,24 +22,20 @@ export default defineComponent({
       }));
     const data = ref<DataRow[]>(createData());
 
+    const tableProps = {
+      keyword: "/nps/menu",
+      isTree: false,
+    };
+
     const columns: ColumnType[] = [
       { type: "selection" },
-      { title: "姓名", key: "name", width: 150, editor: "string" },
-      { title: "年龄", key: "age", width: 100, editor: "number" },
-      { title: "地址", key: "address", width: 300, editor: "string" },
-      {
-        title: "注册日期",
-        key: "regdate",
-        width: 100,
-        editor: "datepicker",
-        editorProps: {
-          type: "date",
-          format: "yyyy-MM-dd",
-        },
-      },
+      { title: "菜单名称", key: "menuName", width: 150, editor: "string" },
+      { title: "组件路径", key: "component", width: 100, editor: "string" },
+      { title: "路由路径", key: "path", width: 100, editor: "string" },
+      { title: "图标", key: "menuIcon", width: 100, editor: "string" },
     ];
 
-    return { columns, data };
+    return { columns, data, tableProps };
   },
 });
 </script>

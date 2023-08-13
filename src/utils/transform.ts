@@ -25,3 +25,20 @@ export const arrayToTree = (propData: any) => {
     });
     return parentList;
 }
+
+
+/**
+ * 树转列表
+ */
+export const treeToArray = (propData: any, parentId = null): any => {
+    // 深拷贝
+    const tree = _.cloneDeep(propData);
+    return _.flatMap(tree, ({ children, ...node }) => {
+        const newNode = { ...node, parentId };
+        if (children && children.length > 0) {
+            return [newNode, ...treeToArray(children, node.id)];
+        } else {
+            return newNode;
+        }
+    });
+}

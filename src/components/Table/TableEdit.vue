@@ -70,7 +70,7 @@ export default defineComponent({
       return h(
         "div",
         {
-          style: "min-height: 22px",
+          style: "min-height: 22px;display: inline-block;",
           onClick: handleOnClick,
         },
         isEdit.value
@@ -80,6 +80,7 @@ export default defineComponent({
               value: inputValue.value,
               "onUpdate:value": (v: any) => {
                 inputValue.value = v;
+
                 handleChange();
               },
               onBlur: () => {

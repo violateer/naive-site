@@ -7,7 +7,7 @@ import { arrayToTree } from "../utils/transform";
 
 export const RenderHelper = async (toPath = "/") => {
     const modules = import.meta.glob("/src/pages/*/*.vue");
-    const menus = await getMenu();
+    const { data: menus } = await getMenu();
 
     // 生成动态路由
     if (router.getRoutes().length == 2) {

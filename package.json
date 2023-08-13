@@ -9,9 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/js-base64": "^3.3.1",
     "@types/lodash": "^4.14.196",
     "@vicons/ionicons5": "^0.12.0",
     "axios": "^1.4.0",
+    "js-base64": "^3.7.5",
     "pinia": "^2.1.6",
     "vue": "^3.3.4",
     "vue-router": "^4.2.4"

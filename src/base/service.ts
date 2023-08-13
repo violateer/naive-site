@@ -1,4 +1,5 @@
 import request from "./request"
+import { Base64 } from 'js-base64';
 
 export interface LoginParams {
     username: string,
@@ -21,6 +22,18 @@ interface User {
 export interface LoginUser {
     token: string,
     user: User
+}
+
+export interface PageLoadProps {
+    keyword: string;
+    pageIndex: number,
+    pageSize: number,
+    swhere?: object
+}
+
+export interface UpdatePropss {
+    keyword: string;
+    list: object[]
 }
 
 /**
@@ -63,5 +76,41 @@ export const profile = async () => {
  */
 export const getMenu = async (isTree = false) => {
     return request.get(`/v1/sys/sysMenu${isTree ? '/tree' : ''}`)
+}
+
+/**
+ * 分页查询
+ */
+export const PageLoad = async (props: PageLoadProps) => {
+    const { keyword, pageIndex, pageSize, swhere } = props;
+
+    const params: any = {
+        pageIndex,
+        pageSize
+    }
+
+    if (swhere) {
+        params.swhere = Base64.encode(JSON.stringify(swhere))
+    }
+
+    window.$loadingBar.start();
+    const res = await request.get(`/v1${keyword}`, {
+        params
+    })
+    window.$loadingBar.finish();
+
+    return res
+}
+
+/**
+ * 批量更新
+ */
+export const UpdateList = async (props: UpdatePropss) => {
+    const { keyword, list } = props;
+
+    window.$loadingBar.start();
+    const res = await request.put(`/v1${keyword}`, list)
+    window.$loadingBar.finish();
+    return res
 }
 

@@ -34,7 +34,7 @@ const transform: InterceptorHooks = {
         }
 
         // 请求返回值，建议将 返回值 进行解构
-        return res.data.data
+        return res.data
     },
     responseInterceptorCatch(err) {
         // 这里用来处理 http 常见错误，进行全局提示

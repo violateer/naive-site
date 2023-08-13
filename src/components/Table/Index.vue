@@ -1,6 +1,8 @@
 <template>
-  <div>
+  <div class="table-content" ref="loadingBarTargetRef">
     <div class="btn-bar">
+      <n-button type="info" size="small" @click="add">新增</n-button>
+      <n-button size="small" @click="loadData">刷新</n-button>
       <n-button type="primary" size="small" @click="save">保存</n-button>
     </div>
     <n-data-table
@@ -8,15 +10,16 @@
       :key="(row: DataRow) => row.id"
       :columns="columns"
       :data="data"
-      :pagination="paginationRef"
+      :pagination="paginationReactive"
       :on-update:page="handlePageChange"
+      :default-expand-all="isTree"
       striped
     />
   </div>
 </template>
   
 <script lang="ts">
-import { h, defineComponent, ref, computed, PropType } from "vue";
+import { h, defineComponent, ref, PropType, reactive } from "vue";
 import TableEdit, {
   DatePickerEditorType,
   EditorType,
@@ -24,6 +27,9 @@ import TableEdit, {
 } from "@/components/Table/TableEdit.vue";
 import { DataTableColumn } from "naive-ui";
 import { format } from "date-fns";
+import { PageLoad, UpdateList } from "@/base/service";
+import * as _ from "lodash";
+import { treeToArray } from "@/utils/transform";
 
 export interface DataRow {
   key: string;
@@ -40,22 +46,24 @@ export type ColumnType = DataTableColumn & {
   render?: (row: DataRow) => any;
 };
 
-export interface PageLoadProps {
+type TableProps = {
   keyword: string;
-  pageIndex: number,
-  pageSize: number,
-  isTree?: boolean
-}
+  isTree?: boolean;
+};
 
 export default defineComponent({
   props: {
     columns: Object as PropType<ColumnType[]>,
     data: Object as PropType<DataRow[]>,
+    tableProps: Object as PropType<TableProps>,
   },
-  setup(props) {
-    const { columns } = props;
-    const data = ref<DataRow[]>(props.data!);
-    const page = ref<number>(1);
+  async setup(props) {
+    const { columns, tableProps } = props;
+    const { isTree = false } = tableProps!;
+    const data = ref<DataRow[]>([]);
+    const pageIndex = ref<number>(1);
+    const pageSize = ref<number>(1);
+    const itemCount = ref<number>(0);
 
     // 处理columns
     columns?.forEach((col) => {
@@ -72,7 +80,7 @@ export default defineComponent({
                 break;
             }
           }
-          const index = getDataIndex(row.key);
+
           // @ts-ignore
           return h(TableEdit, {
             editor: col.editor,
@@ -80,50 +88,118 @@ export default defineComponent({
             value: showVal.value,
             actValue: row[col.key!],
             onUpdateValue(v: any) {
-              data.value[index][col.key!] = v;
-              data.value[index]["_state"] = "modified";
+              setNewData(row.key!, col.key!, v);
             },
           });
         };
       }
     });
 
-    const getDataIndex = (key: string) => {
-      return data.value.findIndex((item) => item.key === key);
-    };
-    const handlePageChange = (curPage: number) => {
-      page.value = curPage;
+    // 编辑树
+    const treeEitHelper = (
+      key: string,
+      colKey: string,
+      newVal: any,
+      tree = data.value
+    ) => {
+      return _.flatMap(tree, (node): any => {
+        if (node.key === key) {
+          node[colKey] = newVal;
+          node["_state"] = "modified";
+          return node;
+        } else {
+          treeEitHelper(key, colKey, newVal, node.children);
+        }
+      });
     };
 
-    const paginationRef = computed(() => ({
-      pageSize: 20,
-      page: page.value,
-    }));
+    const setNewData = (key: string, colKey: string, newVal: any) => {
+      if (isTree) {
+        treeEitHelper(key, colKey, newVal);
+      } else {
+        const index = data.value.findIndex((item) => item.key === key);
+        data.value[index][colKey] = newVal;
+        data.value[index]["_state"] = "modified";
+      }
+    };
+
+    // 查询
+    const loadData = async () => {
+      // 处理data
+      const { data: ResData, totalCount } = await PageLoad({
+        keyword: `${tableProps?.keyword!}${isTree ? "/tree" : ""}`,
+        pageIndex: pageIndex.value,
+        pageSize: pageSize.value,
+      });
+
+      data.value = ResData;
+      itemCount.value = totalCount;
+      // paginationReactive.itemCount = totalCount;
+    };
 
     // 保存
     const save = () => {
-      const modifieds = data.value.filter((v) => v._state === "modified");
-      const addeds = data.value.filter((v) => v._state === "added");
-      console.log(modifieds[0], addeds);
+      const _data = isTree ? treeToArray(data.value) : data.value;
+      const modifieds = _data.filter((v: any) => v._state === "modified");
+      const addeds = _data.filter((v: any) => v._state === "added");
+      console.log(modifieds, addeds);
+
+      if (modifieds.length > 0) {
+        UpdateList({
+          keyword: tableProps?.keyword!,
+          list: modifieds,
+        });
+      }
     };
+
+    // 新增
+    const add = () => {};
+
+    // 分页
+    const handlePageChange = (curPage: number) => {
+      pageIndex.value = curPage;
+      loadData();
+    };
+
+    const paginationReactive = reactive({
+      page: pageIndex.value,
+      pageSize: pageSize.value,
+      itemCount: itemCount.value,
+      onChange: (page: number) => {
+        paginationReactive.page = page;
+        loadData();
+      },
+      onUpdatePageSize: (pageSize: number) => {
+        paginationReactive.pageSize = pageSize;
+        paginationReactive.page = 1;
+        loadData();
+      },
+    });
+
+    loadData();
 
     return {
       data,
-      paginationRef,
+      isTree,
+      paginationReactive,
       handlePageChange,
       columns,
       save,
+      add,
+      loadData,
     };
   },
 });
 </script>
 
 <style lang="scss">
-.btn-bar {
-  padding: 5px 0;
-}
+.table-content {
+  .btn-bar {
+    padding: 5px 0;
 
-.n-data-table {
-  height: 100%;
+    .n-button {
+      margin-right: 5px;
+    }
+  }
 }
 </style>
