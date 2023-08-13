@@ -18,12 +18,14 @@
 <script lang="ts">
 import { h, defineComponent, ref, computed, PropType } from "vue";
 import TableEdit, {
+  DatePickerEditorType,
   EditorType,
   NumberEditorType,
 } from "@/components/Table/TableEdit.vue";
 import { DataTableColumn } from "naive-ui";
+import { format } from "date-fns";
 
-interface DataRow {
+export interface DataRow {
   key: string;
   [key: string]: any;
 }
@@ -33,36 +35,50 @@ export type ColumnType = DataTableColumn & {
   key?: string;
   width?: number;
   editor?: EditorType;
-  editorProps?: NumberEditorType;
+  editorProps?: NumberEditorType | DatePickerEditorType;
   format?: string;
   render?: (row: DataRow) => any;
 };
 
-const createData = () =>
-  Array.from({ length: 100 }).map((_, index) => ({
-    key: index + "",
-    name: `John Brown ${index}`,
-    age: (Math.random() * 40) | 0,
-    address: `New York No. ${index} Lake Park`,
-  }));
+export interface PageLoadProps {
+  keyword: string;
+  pageIndex: number,
+  pageSize: number,
+  isTree?: boolean
+}
 
 export default defineComponent({
   props: {
     columns: Object as PropType<ColumnType[]>,
+    data: Object as PropType<DataRow[]>,
   },
   setup(props) {
     const { columns } = props;
-    const data = ref<DataRow[]>(createData());
+    const data = ref<DataRow[]>(props.data!);
     const page = ref<number>(1);
 
     // 处理columns
     columns?.forEach((col) => {
       if (col.editor) {
         col.render = (row: any) => {
+          const showVal = ref<any>(row[col.key!]);
+          if (col.editorProps) {
+            switch (col.editor) {
+              case "datepicker":
+                const editorProps = col.editorProps as DatePickerEditorType;
+                showVal.value = format(row[col.key!], editorProps.format!);
+                break;
+              default:
+                break;
+            }
+          }
           const index = getDataIndex(row.key);
+          // @ts-ignore
           return h(TableEdit, {
             editor: col.editor,
-            value: row[col.key!],
+            editorProps: col.editorProps,
+            value: showVal.value,
+            actValue: row[col.key!],
             onUpdateValue(v: any) {
               data.value[index][col.key!] = v;
               data.value[index]["_state"] = "modified";

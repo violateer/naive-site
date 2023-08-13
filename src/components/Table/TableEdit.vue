@@ -1,5 +1,6 @@
 <script lang="ts">
 import { NInput, NInputNumber } from "naive-ui";
+import { NDatePicker } from "naive-ui/lib";
 import { defineComponent, ref, nextTick, h, PropType, markRaw } from "vue";
 
 export type EditorType =
@@ -14,23 +15,31 @@ type onUpdateValueType = (row: any) => void;
 
 export interface NumberEditorType {
   precision?: string;
-  format?: (value: number | null) => string;
   validator?: (value: number) => boolean;
   min?: string;
   max?: string;
 }
 
+export interface DatePickerEditorType {
+  type?: string;
+  format?: string;
+}
+
 export default defineComponent({
   props: {
     editor: String as PropType<EditorType>,
+    editorProps: Object as
+      | PropType<NumberEditorType>
+      | Object as PropType<DatePickerEditorType>,
     value: [String, Number],
+    actValue: [String, Number],
     onUpdateValue: Function as PropType<onUpdateValueType>,
   },
   setup(props) {
     const isEdit = ref(false);
 
     const inputRef = ref();
-    const inputValue = ref(props.value);
+    const inputValue = ref(props.actValue);
     function handleOnClick() {
       isEdit.value = true;
       nextTick(() => {
@@ -50,7 +59,9 @@ export default defineComponent({
         case "number":
           editEl.value = markRaw(NInputNumber);
           break;
-
+        case "datepicker":
+          editEl.value = markRaw(NDatePicker);
+          break;
         default:
           editEl.value = markRaw(NInput);
           break;
@@ -64,6 +75,7 @@ export default defineComponent({
         },
         isEdit.value
           ? h(editEl.value, {
+              ...props.editorProps,
               ref: inputRef,
               value: inputValue.value,
               "onUpdate:value": (v: any) => {
