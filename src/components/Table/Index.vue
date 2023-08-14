@@ -7,20 +7,29 @@
     </div>
     <n-data-table
       size="small"
+      :remote="true"
       :key="(row: DataRow) => row.id"
       :columns="columns"
       :data="data"
-      :pagination="paginationReactive"
-      :on-update:page="handlePageChange"
       :default-expand-all="isTree"
+      max-height="calc(100vh - 133px)"
       striped
     />
+    <div class="pagination-content">
+      <n-pagination
+        v-if="!isTree"
+        :page-size="pageSize"
+        :item-count="itemCount"
+        :on-update:page="handlePageChange"
+      />
+    </div>
   </div>
 </template>
   
 <script lang="ts">
-import { h, defineComponent, ref, PropType, reactive } from "vue";
+import { h, defineComponent, ref, PropType } from "vue";
 import TableEdit, {
+  ComboboxEditorType,
   DatePickerEditorType,
   EditorType,
   NumberEditorType,
@@ -41,7 +50,7 @@ export type ColumnType = DataTableColumn & {
   key?: string;
   width?: number;
   editor?: EditorType;
-  editorProps?: NumberEditorType | DatePickerEditorType;
+  editorProps?: NumberEditorType | DatePickerEditorType | ComboboxEditorType;
   format?: string;
   render?: (row: DataRow) => any;
 };
@@ -71,10 +80,17 @@ export default defineComponent({
         col.render = (row: any) => {
           const showVal = ref<any>(row[col.key!]);
           if (col.editorProps) {
+            let editorProps;
             switch (col.editor) {
               case "datepicker":
-                const editorProps = col.editorProps as DatePickerEditorType;
+                editorProps = col.editorProps as DatePickerEditorType;
                 showVal.value = format(row[col.key!], editorProps.format!);
+                break;
+              case "combobox":
+                editorProps = col.editorProps as ComboboxEditorType;
+                showVal.value = editorProps.options.filter(
+                  (v) => v.value === String(row[col.key!])
+                )[0].label;
                 break;
               default:
                 break;
@@ -134,7 +150,8 @@ export default defineComponent({
 
       data.value = ResData;
       itemCount.value = totalCount;
-      // paginationReactive.itemCount = totalCount;
+
+      console.log(itemCount.value);
     };
 
     // 保存
@@ -161,27 +178,14 @@ export default defineComponent({
       loadData();
     };
 
-    const paginationReactive = reactive({
-      page: pageIndex.value,
-      pageSize: pageSize.value,
-      itemCount: itemCount.value,
-      onChange: (page: number) => {
-        paginationReactive.page = page;
-        loadData();
-      },
-      onUpdatePageSize: (pageSize: number) => {
-        paginationReactive.pageSize = pageSize;
-        paginationReactive.page = 1;
-        loadData();
-      },
-    });
-
     loadData();
 
     return {
       data,
       isTree,
-      paginationReactive,
+      pageIndex,
+      pageSize,
+      itemCount,
       handlePageChange,
       columns,
       save,
@@ -200,6 +204,13 @@ export default defineComponent({
     .n-button {
       margin-right: 5px;
     }
+  }
+
+  .pagination-content {
+    width: calc(100% - 5px);
+    display: flex;
+    justify-content: end;
+    padding: 5px;
   }
 }
 </style>

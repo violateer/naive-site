@@ -24,7 +24,7 @@ export default defineComponent({
 
     const tableProps = {
       keyword: "/nps/menu",
-      isTree: false,
+      isTree: true,
     };
 
     const columns: ColumnType[] = [
@@ -33,6 +33,28 @@ export default defineComponent({
       { title: "组件路径", key: "component", width: 100, editor: "string" },
       { title: "路由路径", key: "path", width: 100, editor: "string" },
       { title: "图标", key: "menuIcon", width: 100, editor: "string" },
+      {
+        title: "权限",
+        key: "menuRole",
+        width: 100,
+        editor: "combobox",
+        editorProps: {
+          options: [
+            {
+              label: "管理员",
+              value: "0",
+            },
+            {
+              label: "开发者",
+              value: "1",
+            },
+            {
+              label: "游客",
+              value: "2",
+            },
+          ],
+        },
+      },
     ];
 
     return { columns, data, tableProps };

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { NInput, NInputNumber } from "naive-ui";
+import { NInput, NInputNumber, NSelect } from "naive-ui";
 import { NDatePicker } from "naive-ui/lib";
 import { defineComponent, ref, nextTick, h, PropType, markRaw } from "vue";
 
@@ -25,12 +25,22 @@ export interface DatePickerEditorType {
   format?: string;
 }
 
+interface ComboboxEditorOptionType {
+  label: string;
+  value: string;
+  disabled?: boolean;
+}
+
+export interface ComboboxEditorType {
+  options: ComboboxEditorOptionType[];
+}
+
 export default defineComponent({
   props: {
     editor: String as PropType<EditorType>,
-    editorProps: Object as
-      | PropType<NumberEditorType>
-      | Object as PropType<DatePickerEditorType>,
+    editorProps: Object as PropType<NumberEditorType> | Object as
+      | PropType<DatePickerEditorType>
+      | Object as PropType<ComboboxEditorType>,
     value: [String, Number],
     actValue: [String, Number],
     onUpdateValue: Function as PropType<onUpdateValueType>,
@@ -62,6 +72,10 @@ export default defineComponent({
         case "datepicker":
           editEl.value = markRaw(NDatePicker);
           break;
+        case "combobox":
+          editEl.value = markRaw(NSelect);
+          inputValue.value = props.value;
+          break;
         default:
           editEl.value = markRaw(NInput);
           break;
@@ -70,7 +84,7 @@ export default defineComponent({
       return h(
         "div",
         {
-          style: "min-height: 22px;display: inline-block;",
+          style: "min-height: 22px;display: inline-block;min-width:10rem;",
           onClick: handleOnClick,
         },
         isEdit.value

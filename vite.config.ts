@@ -13,7 +13,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://code.violateer.top:3100",
+        target: "http://www.violateer.top:3100",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ""),
       },
