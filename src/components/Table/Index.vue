@@ -12,6 +12,8 @@
       :columns="columns"
       :data="data"
       :default-expand-all="isTree"
+      :row-props="rowProps"
+      :row-key="rowKey"
       max-height="calc(100vh - 133px)"
       striped
     />
@@ -34,11 +36,12 @@ import TableEdit, {
   EditorType,
   NumberEditorType,
 } from "@/components/Table/TableEdit.vue";
-import { DataTableColumn } from "naive-ui";
+import { DataTableColumn, DataTableRowKey } from "naive-ui";
 import { format } from "date-fns";
 import { PageLoad, UpdateList } from "@/base/service";
 import * as _ from "lodash";
 import { treeToArray } from "@/utils/transform";
+import { RowData } from "naive-ui/es/data-table/src/interface";
 
 export interface DataRow {
   key: string;
@@ -73,6 +76,8 @@ export default defineComponent({
     const pageIndex = ref<number>(1);
     const pageSize = ref<number>(1);
     const itemCount = ref<number>(0);
+    const rowKey = (row: DataRow) => row.address;
+    const checkedRowKeysRef = ref<DataTableRowKey[]>([]);
 
     // 处理columns
     columns?.forEach((col) => {
@@ -139,6 +144,16 @@ export default defineComponent({
       }
     };
 
+    // 点击行事件
+    const rowProps = (row: RowData) => {
+      return {
+        // key: row.key,
+        onClick: () => {
+          console.log(row);
+        },
+      };
+    };
+
     // 查询
     const loadData = async () => {
       // 处理data
@@ -150,8 +165,6 @@ export default defineComponent({
 
       data.value = ResData;
       itemCount.value = totalCount;
-
-      console.log(itemCount.value);
     };
 
     // 保存
@@ -170,7 +183,9 @@ export default defineComponent({
     };
 
     // 新增
-    const add = () => {};
+    const add = () => {
+      console.log(checkedRowKeysRef.value);
+    };
 
     // 分页
     const handlePageChange = (curPage: number) => {
@@ -191,6 +206,9 @@ export default defineComponent({
       save,
       add,
       loadData,
+      rowProps,
+      rowKey,
+      checkedRowKeysRef,
     };
   },
 });

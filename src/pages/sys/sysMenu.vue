@@ -28,7 +28,6 @@ export default defineComponent({
     };
 
     const columns: ColumnType[] = [
-      { type: "selection" },
       { title: "菜单名称", key: "menuName", width: 150, editor: "string" },
       { title: "组件路径", key: "component", width: 100, editor: "string" },
       { title: "路由路径", key: "path", width: 100, editor: "string" },
