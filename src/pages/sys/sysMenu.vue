@@ -24,6 +24,7 @@ export default defineComponent({
 
     const tableProps = {
       keyword: "/nps/menu",
+      multiple: true,
       isTree: true,
     };
 

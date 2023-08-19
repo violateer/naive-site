@@ -11,9 +11,12 @@
       :key="(row: DataRow) => row.id"
       :columns="columns"
       :data="data"
+      :multiple="multiple"
       :default-expand-all="isTree"
       :row-props="rowProps"
       :row-key="rowKey"
+      :row-class-name="rowClassName"
+      :checked-row-keys="checkedRowKeysRef"
       max-height="calc(100vh - 133px)"
       striped
     />
@@ -61,6 +64,9 @@ export type ColumnType = DataTableColumn & {
 type TableProps = {
   keyword: string;
   isTree?: boolean;
+  multiple?: boolean;
+  pageIndex?: number;
+  pageSize?: number;
 };
 
 export default defineComponent({
@@ -71,13 +77,25 @@ export default defineComponent({
   },
   async setup(props) {
     const { columns, tableProps } = props;
-    const { isTree = false } = tableProps!;
+    const {
+      isTree = false,
+      multiple = false,
+      pageIndex: propPageIndex = 1,
+      pageSize: propPageSize = 25,
+    } = tableProps!;
     const data = ref<DataRow[]>([]);
-    const pageIndex = ref<number>(1);
-    const pageSize = ref<number>(1);
+    const pageIndex = ref<number>(propPageIndex);
+    const pageSize = ref<number>(propPageSize);
     const itemCount = ref<number>(0);
-    const rowKey = (row: DataRow) => row.address;
+    const rowKey = (row: DataRow) => row.key;
     const checkedRowKeysRef = ref<DataTableRowKey[]>([]);
+
+    if (
+      multiple &&
+      columns?.filter((v) => v.type === "selection").length === 0
+    ) {
+      columns?.unshift({ type: "selection" });
+    }
 
     // 处理columns
     columns?.forEach((col) => {
@@ -144,12 +162,27 @@ export default defineComponent({
       }
     };
 
+    const rowClassName = (row: RowData) => {
+      return checkedRowKeysRef.value.includes(row.key) ? "active" : "";
+    };
+
     // 点击行事件
     const rowProps = (row: RowData) => {
       return {
-        // key: row.key,
         onClick: () => {
-          console.log(row);
+          if (!multiple) {
+            // 单选
+            checkedRowKeysRef.value = [row.key];
+          } else {
+            // 多选
+            if (checkedRowKeysRef.value.includes(row.key)) {
+              checkedRowKeysRef.value = checkedRowKeysRef.value.filter(
+                (v) => v !== row.key
+              );
+            } else {
+              checkedRowKeysRef.value.push(row.key);
+            }
+          }
         },
       };
     };
@@ -198,6 +231,7 @@ export default defineComponent({
     return {
       data,
       isTree,
+      multiple,
       pageIndex,
       pageSize,
       itemCount,
@@ -208,6 +242,7 @@ export default defineComponent({
       loadData,
       rowProps,
       rowKey,
+      rowClassName,
       checkedRowKeysRef,
     };
   },
@@ -229,6 +264,12 @@ export default defineComponent({
     display: flex;
     justify-content: end;
     padding: 5px;
+  }
+
+  tr.active {
+    td {
+      background: rgba(24, 160, 88, 0.1) !important;
+    }
   }
 }
 </style>
