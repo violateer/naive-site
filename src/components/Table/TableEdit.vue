@@ -12,6 +12,7 @@ export type EditorType =
   | "combobox";
 
 type onUpdateValueType = (row: any) => void;
+type setIsEditType = (val: boolean) => void;
 
 export interface NumberEditorType {
   precision?: string;
@@ -44,6 +45,7 @@ export default defineComponent({
     value: [String, Number],
     actValue: [String, Number],
     onUpdateValue: Function as PropType<onUpdateValueType>,
+    setIsEdit: Function as PropType<setIsEditType>,
   },
   setup(props) {
     const isEdit = ref(false);
@@ -52,6 +54,7 @@ export default defineComponent({
     const inputValue = ref(props.actValue);
     function handleOnClick() {
       isEdit.value = true;
+      props.setIsEdit?.(isEdit.value);
       nextTick(() => {
         inputRef.value.focus();
       });
@@ -99,6 +102,7 @@ export default defineComponent({
               },
               onBlur: () => {
                 isEdit.value = false;
+                props.setIsEdit?.(isEdit.value);
               },
             })
           : props.value

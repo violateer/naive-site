@@ -1,31 +1,22 @@
 <template>
   <div class="table-content">
-    <Table :columns="columns" :data="data" :tableProps="tableProps"></Table>
+    <Table :columns="columns" :tableProps="tableProps"></Table>
   </div>
 </template>
   
 <script lang="ts">
-import Table, { ColumnType, DataRow } from "@/components/Table/Index.vue";
-import { defineComponent, ref } from "vue";
+import Table, { ColumnType } from "@/components/Table/Index.vue";
+import { defineComponent } from "vue";
 export default defineComponent({
   components: {
     Table,
   },
   async setup() {
-    const createData = () =>
-      Array.from({ length: 100 }).map((_, index) => ({
-        key: index + "",
-        name: `John Brown ${index}`,
-        age: (Math.random() * 40) | 0,
-        regdate: new Date().getTime(),
-        address: `New York No. ${index} Lake Park`,
-      }));
-    const data = ref<DataRow[]>(createData());
-
     const tableProps = {
       keyword: "/nps/menu",
       multiple: true,
       isTree: true,
+      cascade: false,
     };
 
     const columns: ColumnType[] = [
@@ -57,7 +48,7 @@ export default defineComponent({
       },
     ];
 
-    return { columns, data, tableProps };
+    return { columns, tableProps };
   },
 });
 </script>

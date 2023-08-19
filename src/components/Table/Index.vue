@@ -11,6 +11,7 @@
       :key="(row: DataRow) => row.id"
       :columns="columns"
       :data="data"
+      :cascade="cascade"
       :multiple="multiple"
       :default-expand-all="isTree"
       :row-props="rowProps"
@@ -45,6 +46,7 @@ import { PageLoad, UpdateList } from "@/base/service";
 import * as _ from "lodash";
 import { treeToArray } from "@/utils/transform";
 import { RowData } from "naive-ui/es/data-table/src/interface";
+import { v4 as uuidv4 } from "uuid";
 
 export interface DataRow {
   key: string;
@@ -64,6 +66,7 @@ export type ColumnType = DataTableColumn & {
 type TableProps = {
   keyword: string;
   isTree?: boolean;
+  cascade?: boolean;
   multiple?: boolean;
   pageIndex?: number;
   pageSize?: number;
@@ -72,7 +75,6 @@ type TableProps = {
 export default defineComponent({
   props: {
     columns: Object as PropType<ColumnType[]>,
-    data: Object as PropType<DataRow[]>,
     tableProps: Object as PropType<TableProps>,
   },
   async setup(props) {
@@ -82,6 +84,7 @@ export default defineComponent({
       multiple = false,
       pageIndex: propPageIndex = 1,
       pageSize: propPageSize = 25,
+      cascade = true,
     } = tableProps!;
     const data = ref<DataRow[]>([]);
     const pageIndex = ref<number>(propPageIndex);
@@ -89,6 +92,8 @@ export default defineComponent({
     const itemCount = ref<number>(0);
     const rowKey = (row: DataRow) => row.key;
     const checkedRowKeysRef = ref<DataTableRowKey[]>([]);
+    const isEdit = ref<boolean>(false);
+    const setIsEdit = (val: boolean) => (isEdit.value = val);
 
     if (
       multiple &&
@@ -113,7 +118,7 @@ export default defineComponent({
                 editorProps = col.editorProps as ComboboxEditorType;
                 showVal.value = editorProps.options.filter(
                   (v) => v.value === String(row[col.key!])
-                )[0].label;
+                )[0]?.label;
                 break;
               default:
                 break;
@@ -126,6 +131,7 @@ export default defineComponent({
             editorProps: col.editorProps,
             value: showVal.value,
             actValue: row[col.key!],
+            setIsEdit,
             onUpdateValue(v: any) {
               setNewData(row.key!, col.key!, v);
             },
@@ -144,10 +150,12 @@ export default defineComponent({
       return _.flatMap(tree, (node): any => {
         if (node.key === key) {
           node[colKey] = newVal;
-          node["_state"] = "modified";
+          node["_state"] = node["_state"] ? node["_state"] : "modified";
           return node;
         } else {
-          treeEitHelper(key, colKey, newVal, node.children);
+          if (node.children) {
+            treeEitHelper(key, colKey, newVal, node.children);
+          }
         }
       });
     };
@@ -158,7 +166,9 @@ export default defineComponent({
       } else {
         const index = data.value.findIndex((item) => item.key === key);
         data.value[index][colKey] = newVal;
-        data.value[index]["_state"] = "modified";
+        data.value[index]["_state"] = data.value[index]["_state"]
+          ? data.value[index]["_state"]
+          : "modified";
       }
     };
 
@@ -170,17 +180,19 @@ export default defineComponent({
     const rowProps = (row: RowData) => {
       return {
         onClick: () => {
-          if (!multiple) {
-            // 单选
-            checkedRowKeysRef.value = [row.key];
-          } else {
-            // 多选
-            if (checkedRowKeysRef.value.includes(row.key)) {
-              checkedRowKeysRef.value = checkedRowKeysRef.value.filter(
-                (v) => v !== row.key
-              );
+          if (!isEdit.value) {
+            if (!multiple) {
+              // 单选
+              checkedRowKeysRef.value = [row.key];
             } else {
-              checkedRowKeysRef.value.push(row.key);
+              // 多选
+              if (checkedRowKeysRef.value.includes(row.key)) {
+                checkedRowKeysRef.value = checkedRowKeysRef.value.filter(
+                  (v) => v !== row.key
+                );
+              } else {
+                checkedRowKeysRef.value.push(row.key);
+              }
             }
           }
         },
@@ -198,6 +210,7 @@ export default defineComponent({
 
       data.value = ResData;
       itemCount.value = totalCount;
+      checkedRowKeysRef.value = [];
     };
 
     // 保存
@@ -207,17 +220,31 @@ export default defineComponent({
       const addeds = _data.filter((v: any) => v._state === "added");
       console.log(modifieds, addeds);
 
-      if (modifieds.length > 0) {
-        UpdateList({
-          keyword: tableProps?.keyword!,
-          list: modifieds,
-        });
-      }
+      // if (modifieds.length > 0) {
+      //   UpdateList({
+      //     keyword: tableProps?.keyword!,
+      //     list: modifieds,
+      //   });
+      // }
     };
 
     // 新增
     const add = () => {
-      console.log(checkedRowKeysRef.value);
+      const select = checkedRowKeysRef.value.length
+        ? data.value.filter((v) => v.key === checkedRowKeysRef.value[0])[0]
+        : null;
+      if (select) {
+      } else {
+        const newID = uuidv4();
+        data.value.push({
+          id: newID,
+          parentId: "00000000-0000-0000-0000-000000000000",
+          key: newID,
+          _state: "added",
+        });
+      }
+
+      console.log(data.value);
     };
 
     // 分页
@@ -231,6 +258,7 @@ export default defineComponent({
     return {
       data,
       isTree,
+      cascade,
       multiple,
       pageIndex,
       pageSize,
