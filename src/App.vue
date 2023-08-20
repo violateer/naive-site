@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Init from "./Init.vue";
+console.log(123);
 </script>
 
 <template>

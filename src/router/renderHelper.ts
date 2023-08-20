@@ -33,7 +33,6 @@ export const RenderHelper = async (toPath = "/") => {
 
         console.log(router.getRoutes());
 
-
         router.replace(toPath)
     }
 
