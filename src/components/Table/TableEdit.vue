@@ -28,7 +28,7 @@ export interface DatePickerEditorType {
 
 interface ComboboxEditorOptionType {
   label: string;
-  value: string;
+  value: string | number;
   disabled?: boolean;
 }
 
@@ -87,7 +87,7 @@ export default defineComponent({
       return h(
         "div",
         {
-          style: "min-height: 22px;display: inline-block;min-width:10rem;",
+          style: "min-height: 22px;display: inline-block;min-width:7rem;",
           onClick: handleOnClick,
         },
         isEdit.value

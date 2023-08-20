@@ -31,9 +31,9 @@ export interface PageLoadProps {
     swhere?: object
 }
 
-export interface UpdatePropss {
+export interface ListPropss {
     keyword: string;
-    list: object[]
+    list: any[]
 }
 
 /**
@@ -105,11 +105,39 @@ export const PageLoad = async (props: PageLoadProps) => {
 /**
  * 批量更新
  */
-export const UpdateList = async (props: UpdatePropss) => {
+export const UpdateList = async (props: ListPropss) => {
     const { keyword, list } = props;
 
     window.$loadingBar.start();
     const res = await request.put(`/v1${keyword}`, list)
+    window.$loadingBar.finish();
+    return res
+}
+
+/**
+ * 批量新增
+ */
+export const InsertList = async (props: ListPropss) => {
+    const { keyword, list } = props;
+
+    window.$loadingBar.start();
+    const res = await request.post(`/v1${keyword}`, list)
+    window.$loadingBar.finish();
+    return res
+}
+
+/**
+ * 批量删除
+ */
+export const DeleteList = async (props: ListPropss) => {
+    const { keyword, list } = props;
+
+    window.$loadingBar.start();
+    const res = await request.delete(`/v1${keyword}`, {
+        params: {
+            ids: list.join(",")
+        }
+    })
     window.$loadingBar.finish();
     return res
 }

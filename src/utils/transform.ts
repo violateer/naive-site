@@ -30,13 +30,13 @@ export const arrayToTree = (propData: any) => {
 /**
  * 树转列表
  */
-export const treeToArray = (propData: any, parentId = null): any => {
+export const treeToArray = (propData: any): any => {
     // 深拷贝
     const tree = _.cloneDeep(propData);
     return _.flatMap(tree, ({ children, ...node }) => {
-        const newNode = { ...node, parentId };
+        const newNode = { ...node };
         if (children && children.length > 0) {
-            return [newNode, ...treeToArray(children, node.id)];
+            return [newNode, ...treeToArray(children)];
         } else {
             return newNode;
         }

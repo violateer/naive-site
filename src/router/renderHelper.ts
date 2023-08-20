@@ -31,6 +31,9 @@ export const RenderHelper = async (toPath = "/") => {
             router.addRoute(parenteKey, childRoute);
         });
 
+        console.log(router.getRoutes());
+
+
         router.replace(toPath)
     }
 

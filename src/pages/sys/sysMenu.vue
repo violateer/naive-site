@@ -20,7 +20,13 @@ export default defineComponent({
     };
 
     const columns: ColumnType[] = [
-      { title: "菜单名称", key: "menuName", width: 150, editor: "string" },
+      {
+        title: "菜单名称",
+        key: "menuName",
+        width: 150,
+        editor: "string",
+        required: true,
+      },
       { title: "组件路径", key: "component", width: 100, editor: "string" },
       { title: "路由路径", key: "path", width: 100, editor: "string" },
       { title: "图标", key: "menuIcon", width: 100, editor: "string" },
@@ -45,6 +51,13 @@ export default defineComponent({
             },
           ],
         },
+      },
+      {
+        title: "序号",
+        key: "sequ",
+        width: 50,
+        editor: "string",
+        required: true,
       },
     ];
 

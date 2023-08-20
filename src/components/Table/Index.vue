@@ -2,8 +2,9 @@
   <div class="table-content" ref="loadingBarTargetRef">
     <div class="btn-bar">
       <n-button type="info" size="small" @click="add">新增</n-button>
-      <n-button size="small" @click="loadData">刷新</n-button>
+      <n-button type="error" size="small" @click="dele">删除</n-button>
       <n-button type="primary" size="small" @click="save">保存</n-button>
+      <n-button size="small" @click="loadData">刷新</n-button>
     </div>
     <n-data-table
       size="small"
@@ -42,7 +43,7 @@ import TableEdit, {
 } from "@/components/Table/TableEdit.vue";
 import { DataTableColumn, DataTableRowKey } from "naive-ui";
 import { format } from "date-fns";
-import { PageLoad, UpdateList } from "@/base/service";
+import { DeleteList, InsertList, PageLoad, UpdateList } from "@/base/service";
 import * as _ from "lodash";
 import { treeToArray } from "@/utils/transform";
 import { RowData } from "naive-ui/es/data-table/src/interface";
@@ -59,6 +60,7 @@ export type ColumnType = DataTableColumn & {
   width?: number;
   editor?: EditorType;
   editorProps?: NumberEditorType | DatePickerEditorType | ComboboxEditorType;
+  required?: boolean;
   format?: string;
   render?: (row: DataRow) => any;
 };
@@ -140,8 +142,58 @@ export default defineComponent({
       }
     });
 
+    // 新增树
+    const treeAddHelper = (
+      parentId: string,
+      newRow: DataRow,
+      tree = data.value
+    ) => {
+      const parentNode = _.find(tree, { key: parentId });
+
+      if (parentNode) {
+        if (parentNode.children) {
+          parentNode.children.push(newRow);
+        } else {
+          parentNode.children = [{ ...newRow }];
+        }
+      } else {
+        // 如果找不到父节点，可以选择在根节点下添加
+        tree.push(newRow);
+      }
+    };
+
+    // 新增
+    const add = () => {
+      const select = checkedRowKeysRef.value.length
+        ? treeToArray(data.value).filter(
+            (v: DataRow) => v.key === checkedRowKeysRef.value[0]
+          )[0]
+        : null;
+      const newID = uuidv4();
+      let newRow: DataRow = {
+        id: newID,
+        key: newID,
+        _state: "added",
+      };
+
+      if (isTree) {
+        newRow.parentId = select
+          ? select.id
+          : "00000000-0000-0000-0000-000000000000";
+        if (select) {
+          treeAddHelper(select.id, newRow);
+        } else {
+          data.value.push(newRow);
+        }
+      } else {
+        data.value.push(newRow);
+      }
+
+      console.log(data.value);
+    };
+
     // 编辑树
-    const treeEitHelper = (
+    const treeEditHelper = (
       key: string,
       colKey: string,
       newVal: any,
@@ -154,7 +206,7 @@ export default defineComponent({
           return node;
         } else {
           if (node.children) {
-            treeEitHelper(key, colKey, newVal, node.children);
+            treeEditHelper(key, colKey, newVal, node.children);
           }
         }
       });
@@ -162,7 +214,7 @@ export default defineComponent({
 
     const setNewData = (key: string, colKey: string, newVal: any) => {
       if (isTree) {
-        treeEitHelper(key, colKey, newVal);
+        treeEditHelper(key, colKey, newVal);
       } else {
         const index = data.value.findIndex((item) => item.key === key);
         data.value[index][colKey] = newVal;
@@ -214,37 +266,46 @@ export default defineComponent({
     };
 
     // 保存
-    const save = () => {
+    const save = async () => {
       const _data = isTree ? treeToArray(data.value) : data.value;
       const modifieds = _data.filter((v: any) => v._state === "modified");
       const addeds = _data.filter((v: any) => v._state === "added");
-      console.log(modifieds, addeds);
 
-      // if (modifieds.length > 0) {
-      //   UpdateList({
-      //     keyword: tableProps?.keyword!,
-      //     list: modifieds,
-      //   });
-      // }
-    };
+      let isValid = true;
+      for (let i = 0; i < columns!.length; i++) {
+        const col = columns![i];
+        if (col.required && _data.filter((v: DataRow) => !v[col.key!]).length) {
+          window.$message.warning(`${col.title}必填!`);
+          isValid = false;
+          break;
+        }
+      }
 
-    // 新增
-    const add = () => {
-      const select = checkedRowKeysRef.value.length
-        ? data.value.filter((v) => v.key === checkedRowKeysRef.value[0])[0]
-        : null;
-      if (select) {
-      } else {
-        const newID = uuidv4();
-        data.value.push({
-          id: newID,
-          parentId: "00000000-0000-0000-0000-000000000000",
-          key: newID,
-          _state: "added",
+      if (!isValid) return;
+
+      if (modifieds.length > 0) {
+        UpdateList({
+          keyword: tableProps?.keyword!,
+          list: modifieds,
         });
       }
 
-      console.log(data.value);
+      if (addeds.length > 0) {
+        await InsertList({
+          keyword: tableProps?.keyword!,
+          list: addeds,
+        });
+        loadData();
+      }
+    };
+
+    // 删除
+    const dele = async () => {
+      await DeleteList({
+        keyword: tableProps?.keyword!,
+        list: checkedRowKeysRef.value,
+      });
+      loadData();
     };
 
     // 分页
@@ -267,6 +328,7 @@ export default defineComponent({
       columns,
       save,
       add,
+      dele,
       loadData,
       rowProps,
       rowKey,
